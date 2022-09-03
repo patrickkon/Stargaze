@@ -15,14 +15,22 @@ This repository is split into 3 main folders:
 Please refer to the README.md in k8s-emulator/
 
 ## Disclaimer
-As Stargaze is ongoing work, our emulation fidelity still requires significant improvement. For example, Stargaze does not currently emulate atmospheric attenuation beyond having a coarse-grain static threshold. These will be added incrementally. Please also consider contributing to Stargaze if this is a urgent feature request. Thank you for your patience!
+As Stargaze is ongoing work, our emulation fidelity still requires significant improvement. For example, Stargaze does not currently emulate atmospheric attenuation beyond having a coarse-grain static threshold. These will be added incrementally. Please also consider contributing to Stargaze if you have an urgent feature request. Thank you for your patience!
 
 ## Contributing
 There's a lot more to build and we welcome all contributions! For a list of feature ideas, please contact @patrickkon directly!
 
 ## Citing:
 If you feel our paper and code is helpful, please consider citing our paper by:
-
+```
+@inproceedings{stargaze,
+  title={Stargaze: A LEO Constellation Emulator for Security Experimentation},
+  author={Tser Jern Kon, Patrick and Barradas, Diogo and Chen, Ang},
+  booktitle={Proceedings of the 3rd Workshop on CPS\&IoT Security and Privacy (co-located with ACM CCS'22)},
+  year={2022},
+  address={Los Angeles, CA, USA},
+}
+```
 
 <!-- ### Note:
 1. Hypatia submodule is our own modified fork.

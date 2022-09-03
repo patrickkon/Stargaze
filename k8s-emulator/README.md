@@ -5,8 +5,8 @@ Our current implementation of the emulator uses familiar COTS software component
 
 # Usage and getting started
 ## Provide a constellation configuration script
-- This essentially consists of 3 files: topos/<topo-filename>.txt, cluster_config.yaml and mapping/<mapping-filename>.txt. 
-- Refer below for a formatting guide for the former 2 files. You can refer to the existing files as-is to reference too.
+- This essentially consists of 3 files: topos/\<topo-filename>.txt, cluster_config.yaml and mapping/\<mapping-filename>.txt. 
+- Refer below for a formatting guide for the former 2 files. You can refer to the existing files as-is for reference too.
 
 ## Setup
 ```bash
@@ -67,7 +67,7 @@ helm -n ray uninstall example-cluster
 ```
 
 ### Format of topo.txt:
-- Refer to topo_example.txt for an example.
+- Refer to topos/topo_example.txt for an example.
 - Assumptions: (1) all links are bidirectional. (2) connected graph. (3) GS-GS link does not exist
 - Master nodes format: master node integer index prefixed with "m". e.g. m0 represents the first master node.
 - Ground station nodes format: ground station node integer index prefixed with "g". e.g. g0 represents the first ground station node.
@@ -78,6 +78,7 @@ helm -n ray uninstall example-cluster
     - on the right part of each link: an index which is larger than the left part  
 
 ### Format of cluster_config.yaml
+- Refer to cluster_config.yaml for an example.
 - node_to_sat_or_gs_mapping_file: empty string or file_name
 - init_isl_topo: string, currently choose one from [isls_plus_grid, isls_motif, isls_line]. initial ISL topology of the constellation. A corresponding ISL generation function must be defined in isls/ directory.
 - pod_network, pod_subnet, node_network must have the following format: \*.\*.0.0/*
@@ -89,7 +90,7 @@ helm -n ray uninstall example-cluster
 - num_isls: integer value. Represents the max ISLs per node that is permitted. This will be used for validation while evaluating certain functions.
 - main_gs: choose one from [Paris, Moskva-(Moscow)]. Represents the initial ground station wherein the physically closest satellites in the given satellite constellation will be used as the nodes of our k8s cluster.
 -  destination_gs: empty string, or choose one from [Paris, Moskva-(Moscow)].
-- main_node: string value of a node in topo.txt. Represents the node that will be assigned to the physically closest satellite in the given satellite constellation. This affects the satellites that will be chosen to represent the nodes, which is dictatated by topo.txt. 
+- main_node: string value of a node in topo.txt. Represents the node that will be assigned to the physically closest satellite in the given satellite constellation. This affects the satellites that will be chosen to represent the nodes, which is dictated by topo.txt. 
 - constellation_name: choose one from [Starlink-550]. Represents the superset of the satellites used to represent the nodes.
 - cpus (integer): vCPU count. This is pinned to distinct CPUs, please ensure no overprovisioning for accurate result reproduction. 
 - memory (integer): Interpreted in MB.  
