@@ -1,0 +1,8 @@
+[Unit]
+Description=Activate automated tc every OnUnitActiveSec seconds
+[Timer]
+OnBootSec=10
+OnUnitActiveSec=600
+AccuracySec=10ms
+[Install]
+WantedBy=timers.target

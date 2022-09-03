@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# NOTE: this will be called by the Vagrant provisioner, to move the files to the appropriate locations.
+mv /vagrant/gen_cluster_data/{}/tc_mod.service /etc/systemd/system/
+mv /vagrant/gen_cluster_data/{}/tc_mod.timer /etc/systemd/system/
+
+# Create required files used by the tc_mod.service
+mv /vagrant/utils/temp_tc_count_store.txt /tmp/
+touch /var/log/tc_mod-service.log
+chmod 777 /var/log/tc_mod-service.log

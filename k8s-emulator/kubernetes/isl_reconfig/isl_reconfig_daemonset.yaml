@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: isl-reconfig-api
+  labels:
+    app: isl-reconfig-api
+spec:
+  selector:
+    matchLabels:
+      app: isl-reconfig-api #daemonset will monitor pods with this label
+  template:
+    metadata:
+      labels:
+        app: isl-reconfig-api #label of the pod. must match the label this daemonset will monitor
+    spec:
+      tolerations:
+      # this toleration is to have the daemonset runnable on master nodes
+      # remove it if your masters can't run pods
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      hostNetwork: true
+      containers:
+      - name: main
+        image: soproman/isl_reconfig
+        securityContext: # temp bypass to allow using ip route add/del
+          # allowPrivilegeEscalation: false
+          capabilities:
+            add: ["NET_ADMIN", "SYS_ADMIN"] # add the capabilities you need https://man7.org/linux/man-pages/man7/capabilities.7.html
+          runAsUser: 0
+        # ports: # Note: this is actually not needed, because hostNetwork is True and the pod itself already starts an express server that listens at port 80
+        # - containerPort: 80
+        #   hostPort: 80
+        # command: ["/bin/sh"]
+        # args: ["-c", "while true; do echo hello; sleep 10;done"]
+        # imagePullPolicy: IfNotPresent

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-deployment
+  labels:
+    app: busybox-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: busybox-deployment
+  template:
+    metadata:
+      labels:
+        app: busybox-deployment
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        ports:
+        - containerPort: 80

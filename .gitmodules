@@ -1,0 +1,3 @@
+[submodule "dependencies/hypatia"]
+	path = dependencies/hypatia
+	url = https://github.com/patrickkon/hypatia.git

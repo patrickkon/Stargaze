@@ -1,0 +1,37 @@
+# This file, and streaming.py are adapted from ray/doc/source/ray-core/_examples/streaming in the ray repo
+
+name: ray-example-streaming
+
+description: "A simple ray example for a streaming wordcount"
+tags: ["ray-example", "streaming", "wordcount", "data-processing"]
+
+cluster:
+  config: ray-project/cluster.yaml
+
+environment:
+  requirements: ray-project/requirements.txt
+
+commands:
+  - name: run
+    command: python streaming.py --address {{address}} --num-mappers {{num-mappers}} --num-reducers {{num-reducers}}
+    help: "Start the streaming example."
+    params:
+      - name: address
+        help: "Ray cluster address"
+        default: "ray://example-cluster-ray-head:10001"
+        type: string
+      - name: num-mappers
+        help: "Number of mapper actors used"
+        default: 3
+        type: int
+      - name: num-reducers
+        help: "Number of reducer actors used"
+        default: 4
+        type: int
+    config:
+      tmux: true
+
+output_files: [
+  # Save the logs from the latest run in snapshots.
+  "/tmp/ray/session_latest/logs"
+]

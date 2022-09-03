@@ -1,0 +1,15 @@
+# Deprecated, to be deleted
+apiVersion: v1
+kind: Service
+metadata:
+  name: isl-reconfig-api
+  labels:
+    app: isl-reconfig-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: isl-reconfig-api

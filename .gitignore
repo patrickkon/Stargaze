@@ -1,0 +1,17 @@
+hypatia_plus/gen_data/*
+hypatia_plus/__pycache__/*
+hypatia_plus/isls/__pycache__/*
+k8s-emulator/bash-cni-plugin/*/
+k8s-emulator/gen_cluster_data/*
+hypatia_plus/data/starlink_*/*.txt
+k8s-emulator/utils/__pycache__/*.pyc
+k8s-emulator/k8s_images/*/node_modules/*
+k8s-emulator/tests/results/graphs/dummy_scatter_hist.pdf
+k8s-emulator/tests/results/graphs/test_graph.py
+k8s-emulator/tests/results/logs/__pycache__/log_utils.cpython-37.pyc
+k8s-emulator/tests/workloads/cset/*/setup_route.sh
+k8s-emulator/tests/results/graphs/cset/test.pdf
+k8s-emulator/gen_cluster_data/topo_with_interface_and_ip_file.txt
+k8s-emulator/gen_cluster_data/topo_with_interface_file.txt
+k8s-emulator/br1.xml
+k8s-emulator/tests_temp.sh

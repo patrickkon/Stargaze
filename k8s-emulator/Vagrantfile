@@ -1,0 +1,173 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# NOTE: some of our configs will not survive reboots
+require 'yaml'
+current_dir    = File.dirname(File.expand_path(__FILE__))
+CLUSTER_CONFIG = YAML.load_file("cluster_config.yaml")
+NODE_NETWORK = CLUSTER_CONFIG['node_network']
+CPUS = CLUSTER_CONFIG["cpus"]
+MEMORY = CLUSTER_CONFIG["memory"]
+GS_CPUS = CLUSTER_CONFIG["gs_cpus"] 
+GS_MEMORY = CLUSTER_CONFIG["gs_memory"]
+GS_CPU_START_COUNT = (CLUSTER_CONFIG["num_masters"] + CLUSTER_CONFIG["num_workers"]) * CPUS
+DUMMY_CPUS = CLUSTER_CONFIG["dummy_cpus"]
+DUMMY_MEMORY = CLUSTER_CONFIG["dummy_memory"]
+DUMMY_CPU_START_COUNT = (CLUSTER_CONFIG["num_masters"] + CLUSTER_CONFIG["num_workers"]) * CPUS + (CLUSTER_CONFIG["num_gs"]) * GS_CPUS
+# puts CLUSTER_CONFIG.inspect
+# puts NODE_NETWORK
+
+MASTER_IP = "-1"
+TOKEN = "yi6muo.4ytkfl3l6vl8zfpk"
+
+GEN_CLUSTER_DATA_DIR = "gen_cluster_data"
+# puts GEN_CLUSTER_DATA_NODE_DIR
+
+TOPO_WITH_INTERFACE_IP_FILE = GEN_CLUSTER_DATA_DIR + "/topo_with_interface_and_ip_file.txt"
+
+
+# SECTION: assign IPs to all nodes, and CPU assignments to all nodes
+
+# Format: {:node_name => [ip1, ip2, ... ] }
+node_interfaces = {}
+cpus_assigned = {}
+gs_iter = 0
+node_iter = 0
+dummy_iter = 0
+
+topo_with_interface_ip_file = File.open(TOPO_WITH_INTERFACE_IP_FILE, "r")
+topo_with_interface_ip_file.each do |line|
+  row = line.split()
+  node0_name = row[0]
+  node1_name = row[3]
+  node0_ip = row[2]
+  node1_ip = row[5]
+
+  if !node_interfaces.key?(node0_name)
+    node_interfaces[node0_name] = [node0_ip]
+
+    if (!node0_name.include? "g") && (!node0_name.include? "d") # assigning CPUs to nodes other than GS nodes and dummy nodes
+      cpus_assigned[node0_name] = (CPUS*(node_iter)).to_s + "-" + (CPUS*(node_iter+1) - 1).to_s
+      node_iter += 1
+    elsif !node0_name.include? "d" # assigning CPUs to GS nodes
+      # We assign the cpus at the end that have not been given to master&worker nodes
+      cpus_assigned[node0_name] = (GS_CPUS*(gs_iter) + GS_CPU_START_COUNT).to_s + "-" + (GS_CPUS*(gs_iter+1) + GS_CPU_START_COUNT - 1).to_s
+      gs_iter += 1
+    else # assigning CPUs to dummy nodes
+      cpus_assigned[node0_name] = (DUMMY_CPUS*(dummy_iter) + DUMMY_CPU_START_COUNT).to_s + "-" + (DUMMY_CPUS*(dummy_iter+1) + DUMMY_CPU_START_COUNT - 1).to_s
+      dummy_iter += 1
+    end
+
+  else
+    node_interfaces[node0_name].append(node0_ip)
+  end
+
+  if !node_interfaces.key?(node1_name)
+    node_interfaces[node1_name] = [node1_ip]
+
+    if (!node1_name.include? "g") && (!node1_name.include? "d") # assigning CPUs to nodes other than GS nodes and dummy nodes
+      cpus_assigned[node1_name] = (CPUS*(node_iter)).to_s + "-" + (CPUS*(node_iter+1) - 1).to_s
+      node_iter += 1
+    elsif !node1_name.include? "d" # assigning CPUs to GS nodes
+      # We assign the cpus at the end that have not been given to master&worker nodes
+      cpus_assigned[node1_name] = (GS_CPUS*(gs_iter) + GS_CPU_START_COUNT).to_s + "-" + (GS_CPUS*(gs_iter+1) + GS_CPU_START_COUNT - 1).to_s
+      gs_iter += 1
+    else # assigning CPUs to dummy nodes
+      cpus_assigned[node1_name] = (DUMMY_CPUS*(dummy_iter) + DUMMY_CPU_START_COUNT).to_s + "-" + (DUMMY_CPUS*(dummy_iter+1) + DUMMY_CPU_START_COUNT - 1).to_s
+      dummy_iter += 1
+    end
+
+  else
+    node_interfaces[node1_name].append(node1_ip)
+  end
+
+  # Set MASTER_IP to the first interface encountered of the first master node encountered:
+  if (MASTER_IP == "-1") && (node0_name.include? "m")
+    MASTER_IP = node0_ip.split("/")[0]
+  end
+
+  if (MASTER_IP == "-1") && (node1_name.include? "m")
+    MASTER_IP = node1_ip.split("/")[0]
+  end
+
+end
+
+# puts node_interfaces
+Vagrant.configure("2") do |config|
+  # SECTION: assign common configuration:
+  config.vm.box = "centos/7"
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # SECTION: node specific configuration:
+  node_interfaces.each_with_index do |(node_name,ip_array),count|
+    node_name_corrected = node_name
+    if !node_name.include? "m" and !node_name.include? "g" and !node_name.include? "d"
+      node_name_corrected = "n" + node_name
+    end
+    config.vm.define node_name_corrected do |node|
+
+      if !node_name.include? "g" and !node_name.include? "d"
+        node.vm.provider :libvirt do |libvirt|
+          # libvirt.cpu_mode = 'host-passthrough'
+          libvirt.graphics_type = 'none'
+          libvirt.memory = MEMORY # to accomodate ray
+          libvirt.cpus = CPUS
+          libvirt.qemu_use_session = false
+        end
+      elsif !node_name.include? "d"
+        node.vm.provider :libvirt do |libvirt|
+          # libvirt.cpu_mode = 'host-passthrough'
+          libvirt.graphics_type = 'none'
+          libvirt.memory = GS_MEMORY
+          libvirt.cpus = GS_CPUS
+          libvirt.qemu_use_session = false
+        end
+      else
+        node.vm.provider :libvirt do |libvirt|
+          # libvirt.cpu_mode = 'host-passthrough'
+          libvirt.graphics_type = 'none'
+          libvirt.memory = DUMMY_MEMORY
+          libvirt.cpus = DUMMY_CPUS
+          libvirt.qemu_use_session = false
+        end
+      end
+    
+      node.vm.provision "shell", path: "common.sh"
+      
+      node.vm.hostname = node_name_corrected
+      
+      ip_array.each do |ip|
+        node.vm.network :private_network, ip: ip.split("/")[0]
+      end
+
+      # setup k8s-routing:
+      BASH_CNI_PLUGIN_NODE_DIR = "bash-cni-plugin/%s" % [node_name]
+      SETUP_ROUTE_FILE = BASH_CNI_PLUGIN_NODE_DIR + "/setup_route.sh"
+      node.vm.provision "shell", path: SETUP_ROUTE_FILE
+
+      # k8s-cluster setup
+      if node_name_corrected.include? "m" # master node
+        node.vm.provision "shell", path: "master.sh",
+          env: { "MASTER_IP" => MASTER_IP, "TOKEN" => TOKEN }
+      else
+        node.vm.provision "shell", path: "worker.sh",
+          env: { "MASTER_IP" => MASTER_IP, "TOKEN" => TOKEN }
+      end
+
+      # setup k8s-cni:
+      SETUP_CNI_FILE = BASH_CNI_PLUGIN_NODE_DIR + "/setup_cni.sh"
+
+      # setup auto tc files:
+      GEN_CLUSTER_DATA_NODE_DIR = GEN_CLUSTER_DATA_DIR + "/%s" % [node_name]
+      CONFIG_TC_MOD_FILE = GEN_CLUSTER_DATA_NODE_DIR + "/config_tc_mod.sh"
+
+      node.vm.provision "shell", path: SETUP_CNI_FILE
+      node.vm.provision "shell", path: CONFIG_TC_MOD_FILE
+
+      # Pin vCPUs to CPUs:
+      node.vm.provider :libvirt do |libvirt|
+        libvirt.cpuset = cpus_assigned[node_name]
+      end
+    end
+  end
+end

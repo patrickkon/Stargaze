@@ -1,0 +1,11 @@
+#!/bin/sh
+
+CURRENT_TIME=$(date -u)
+echo "Current time: ${CURRENT_TIME}"
+PREV_NUM=$(sed '1q;d' /tmp/temp_tc_count_store.txt)
+echo "Previous count: ${PREV_NUM}" >> /var/log/tc_mod-service.log
+NUM="$((PREV_NUM + 1))"
+echo "Current count: ${NUM}" >> /var/log/tc_mod-service.log
+sed -i '1s/.*/'$NUM'/' /tmp/temp_tc_count_store.txt
+content=$(sed ''$NUM'q;d' {})
+echo "Command ran: $content" >> /var/log/tc_mod-service.log

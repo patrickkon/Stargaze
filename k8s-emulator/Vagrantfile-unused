@@ -1,0 +1,66 @@
+# User Specific options:
+# number of worker nodes
+NUM_WORKERS = 3
+# num cpus. Please Ensure that this number does not exceed the logical CPUs on your server.  
+NUM_CPUS = 4 # to accomodate ray
+# number of extra disks per worker
+NUM_DISKS = 1
+# size of each disk in gigabytes
+DISK_GBS = 10
+
+MASTER_IP = "192.168.73.100"
+WORKER_IP_BASE = "192.168.73.2" # 200, 201, ...
+TOKEN = "yi6muo.4ytkfl3l6vl8zfpk"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.provider :libvirt do |libvirt|
+    # libvirt.cpu_mode = 'host-passthrough'
+    libvirt.graphics_type = 'none'
+    libvirt.memory = 3000 # to accomodate ray
+    libvirt.cpus = NUM_CPUS
+    libvirt.qemu_use_session = false
+  end
+
+  config.vm.provision "shell", path: "common.sh"
+  config.vm.provision "shell", path: "local-storage/create-volumes.sh"
+
+  config.vm.define "master" do |master|
+    master.vm.hostname = "master"
+    master.vm.network :private_network, ip: MASTER_IP
+
+    master.vm.provider :libvirt do |libvirt|
+      libvirt.cpuset = "1-" + NUM_CPUS.to_s
+    end
+
+    master.vm.provision "shell", path: "master.sh",
+      env: { "MASTER_IP" => MASTER_IP, "TOKEN" => TOKEN }
+
+    master.vm.provision :file do |file|
+      file.source = "local-storage/storageclass.yaml"
+      file.destination = "/tmp/local-storage-storageclass.yaml"
+    end
+    master.vm.provision :file do |file|
+      file.source = "local-storage/provisioner.yaml"
+      file.destination = "/tmp/local-storage-provisioner.yaml"
+    end
+    master.vm.provision "shell", path: "local-storage/install.sh"
+  end
+
+  (0..NUM_WORKERS-1).each do |i|
+    config.vm.define "worker#{i}" do |worker|
+      worker.vm.hostname = "worker#{i}"
+      worker.vm.network :private_network, ip: "#{WORKER_IP_BASE}" + i.to_s.rjust(2, '0')
+      worker.vm.provider :libvirt do |libvirt|
+        libvirt.cpuset = (NUM_CPUS*(i+1) + 1).to_s + "-" + (NUM_CPUS*(i+2)).to_s
+        (1..NUM_DISKS).each do |j|
+          libvirt.storage :file, :size => "#{DISK_GBS}G"
+        end
+      end
+      worker.vm.provision "shell", path: "worker.sh",
+        env: { "MASTER_IP" => MASTER_IP, "TOKEN" => TOKEN }
+    end
+  end
+end

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: get-statistics
+spec:
+  selector:
+    matchLabels:
+      app: get-statistics-daemon #daemonset will monitor pods with this label
+  template:
+    metadata:
+      labels:
+        app: get-statistics-daemon #label of the pod. must match the label this daemonset will monitor
+    spec:
+      tolerations:
+      # this toleration is to have the daemonset runnable on master nodes
+      # remove it if your masters can't run pods
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      hostNetwork: true
+      containers:
+      - name: main
+        image: soproman/get_statistics
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
+        # imagePullPolicy: IfNotPresent

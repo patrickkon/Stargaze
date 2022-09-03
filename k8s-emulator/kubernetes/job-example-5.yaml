@@ -1,0 +1,29 @@
+# Job to submit a Ray program from a pod outside a running Ray cluster.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ray-test-job-5
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ray
+          image: soproman/ray-torch
+          imagePullPolicy: Always
+          command: [ "/bin/bash", "-c", "--" ]
+          args:
+            - "python /required-files/kubernetes/example_scripts/map-reduce/streaming.py --address ray://example-cluster-ray-head:10001" 
+          resources:
+            requests:
+              cpu: 1
+              memory: 512Mi
+          volumeMounts:
+          - mountPath: /required-files
+            name: required-files-volume
+      volumes:
+      - name: required-files-volume
+        hostPath:
+          path: /vagrant
+          type: Directory
+      nodeName: n2

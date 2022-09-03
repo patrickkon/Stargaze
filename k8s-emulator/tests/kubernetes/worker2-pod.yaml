@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx2
+spec:
+  containers:
+  - name: network-multitool
+    image: wbitt/network-multitool
+  nodeName: worker2
