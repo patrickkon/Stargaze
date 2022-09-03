@@ -9,7 +9,7 @@ LEO constellations' recent meteoric rise has led to the proposition of many nove
 This repository is split into 3 main folders:
 - k8s-emulator: constellation generator. This is the only directory a user needs to access.
 - dependencies: external github submodules that Stargaze currently uses.
-- hypatia_plus: holds multiple scripts that access the Hypatia submodule to extract network information.
+- hypatia_plus: holds multiple scripts that access our forked Hypatia submodule to extract network information.
 
 ## Usage:
 Please refer to the README.md in k8s-emulator/
