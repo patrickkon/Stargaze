@@ -15,7 +15,7 @@ This repository is split into 3 main folders:
 Please refer to the README.md in k8s-emulator/
 
 ## Disclaimer
-As Stargaze is ongoing work, our emulation fidelity still requires significant improvement. For example, Stargaze does not currently emulate atmospheric attenuation beyond having a coarse-grain static threshold. These will be added incrementally. Please also consider contributing to Stargaze if you have an urgent feature request. Thank you for your patience!
+As Stargaze is ongoing work, our emulation fidelity still requires significant improvement. Currently, our code is not production quality and is not fit for production use. For example, Stargaze does not currently emulate atmospheric attenuation beyond having a coarse-grain static threshold. These will be added incrementally. Please also consider contributing to Stargaze if you have an urgent feature request. Thank you for your patience! 
 
 ## Contributing
 There's a lot more to build and we welcome all contributions! For a list of feature ideas, please contact @patrickkon directly!
